@@ -13,7 +13,13 @@ function bestfit = run_ErosionCRDW(inputs,totaltime_initial,rateCR,rateDW,cover,
   if isempty(rateDW.present)
       sample_data.maxdepth = maxconc_z_gcm2*2 +10000; % sample depth*2 + safety factor
   else
-      erosion = rateDW.present/10 *100; % cm/yr *100
+      if ~isfield(rateDW,'change_initial') || rateDW.change_initial < 1
+          max_rateDW_change = 1;
+      else
+          max_rateDW_change = rateDW.change_initial;
+      end
+      max_DWrate = rateDW.present * max_rateDW_change * 5; % Use starting down-wearing rate * 5 as a safety factor
+      erosion = max_DWrate/10 *100; % cm/yr *100
       sample_data.maxdepth = maxconc_z_gcm2 + (maxage*1000)*erosion*rho; % sample depth + maxage*erosion(cm/yr)*density
   end
   

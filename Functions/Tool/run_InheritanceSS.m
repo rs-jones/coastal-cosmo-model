@@ -23,7 +23,7 @@ function bestfit = run_InheritanceSS(inputs,erorate_initial,sample_data,inh_meas
   if erorate_initial == 0
       opts = optimset(opts,'TolFun',1e-2,'TolX',1e-2);
   else
-      opts = optimset(opts,'TolFun',1e-4,'TolX',1e-4);
+      opts = optimset(opts,'TolFun',1e-5,'TolX',1e-5);
   end
   
   

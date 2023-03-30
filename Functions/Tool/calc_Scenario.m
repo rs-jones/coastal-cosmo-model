@@ -1,7 +1,7 @@
 function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fig)
   
   % GET SCENARIO VARIABLES AND PARAMETERS
-  fprintf('\nCalculating nuclide parameters and scenario concentrations...');
+  fprintf('\nCalculating nuclide parameters and scenario concentrations...\n');
   time = 1:total_time;
   cliff_ret_multiplier = rateCR.change;
   ero_multiplier = rateDW.change;
@@ -33,7 +33,7 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
   
   
   % CALCULATE CLIFF RETREAT RATE AND EXPOSURE TIMES
-  if ~isempty(rateCR.present) || ~isempty(rateCR.change)
+  if ~(isempty(rateCR.present) || isempty(rateCR.change))
       
       rateCR_pres_myr = rateCR.present;
       
@@ -78,7 +78,7 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
   
   
   % CALCULATE TOPOGRAPHIC SHIELDING
-  if ~isempty(rateCR.present) || ~isempty(rateCR.change)
+  if ~(isempty(rateCR.present) || isempty(rateCR.change))
       sTopo = shielding_topo(inputs.topo,inputs.profile,cliff_pos,expo);
   else
       sTopo = inputs.topo(:,2)';
@@ -132,7 +132,7 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
   
   
   % DETERMINE DOWN-WEARING RATE
-  if ~isempty(rateDW.present) || ~isempty(rateDW.change)
+  if ~(isempty(rateDW.present) || isempty(rateDW.change))
       
       rateDW_pres_gcm2yr = (rateDW.present ./10) .* rho;
       
@@ -189,7 +189,7 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
   % PLOT CONCENTRATIONS FOR SCENARIO
   if ~isempty(plot_fig)
       
-      if ~isempty(rateCR.present) || ~isempty(rateCR.change)
+      if ~(isempty(rateCR.present) || isempty(rateCR.change))
           cliff_pos_idx = find(cliff_retreat==0,1)-1;
           if isempty(cliff_pos_idx) % Cliff position before recent period of retreat
               inputs.cliff_pos = round(cliff_pos(end));
@@ -197,7 +197,7 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
               inputs.cliff_pos = round(cliff_pos(cliff_pos_idx));
           end
       end
-      if ~isempty(rateDW.present) || ~isempty(rateDW.change)
+      if ~(isempty(rateDW.present) || isempty(rateDW.change))
           ero_rate_myr = (ero_rate ./ rho) ./ 100;
           inputs.profile_ero_expo = inputs.profile(:,2)' + (ero_rate_myr.*expo); % Platform profile before down-wearing
       end
@@ -211,6 +211,6 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
       drawnow;
   end
   
-  fprintf('\nDone.');
+  fprintf('Done.');
   
 end

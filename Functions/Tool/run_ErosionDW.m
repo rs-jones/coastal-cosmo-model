@@ -10,7 +10,13 @@ function bestfit = run_ErosionDW(inputs,totaltime_initial,rateDW,cover,sample_da
   rho = mean(sample_data.CC(:,6));
   maxconc_z_gcm2 = sample_data.CC(maxconc_idx,5) * rho;  
   maxage=8160; % 6* half-life = 8160 ka
-  erosion = rateDW.present/10 *100; % cm/yr *100
+  if ~isfield(rateDW,'change_initial') || rateDW.change_initial < 1
+      max_rateDW_change = 1;
+  else
+      max_rateDW_change = rateDW.change_initial;
+  end
+  max_DWrate = rateDW.present * max_rateDW_change * 5; % Use starting down-wearing rate * 5 as a safety factor
+  erosion = max_DWrate/10 *100; % cm/yr *100
   sample_data.maxdepth = maxconc_z_gcm2 + (maxage*1000)*erosion*rho; % sample depth + maxage*erosion(cm/yr)*density
 
   % Get nuclide parameters, add to sample data
