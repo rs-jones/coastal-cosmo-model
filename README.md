@@ -32,7 +32,7 @@ Inputs required to run the model (also see example input files):
 - Topographic shielding across the platform (.txt), with columns:
     1. Distance from cliff (m)
     2. Shielding factor for terrain (unitless)
-- Platform elevation profile (.txt.), with columns:
+- Platform elevation profile (.txt), with columns:
     1. Distance from cliff (m)
     2. Elevation (m AOD)
 - Relative sea-level history (.txt), with columns:
