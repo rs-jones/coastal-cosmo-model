@@ -4,6 +4,9 @@ function bestfit = run_InheritanceSS(inputs,erorate_initial,sample_data,inh_meas
   fprintf('\nInheritance \nCalculating nuclide parameters...');
   inh_meas.sample_idx = find(inh_meas.conc_mean == sample_data.measured_raw(:,2));
   inh_meas.conc = [inh_meas.conc_mean,inh_meas.conc_uncert];
+  if isempty(inh_meas.sample_idx)
+      inh_meas.sample_idx = 1; % Use the information from first transect sample if inheritance sample is not in the dataset
+  end
   inh_meas.rho = sample_data.CC(inh_meas.sample_idx,6);
   inh_meas.z_gcm2 = inh_meas.depth * 100 * inh_meas.rho;
   
