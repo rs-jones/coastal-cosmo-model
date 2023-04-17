@@ -74,7 +74,7 @@ else
     end
     if isfield(inputs,'profile_ero_expo')
         ero_h = plot(dist_cliff,inputs.profile_ero_expo,'--','Color',[.7,.7,.7],'LineWidth',1.5);
-        if isfield(inputs,'cliff_pos')
+        if isfield(inputs,'cliff_pos') && inputs.cliff_pos < dist_cliff(end)
             ero_h = plot(dist_cliff(cliff_pos_idx:end),inputs.profile_ero_expo(cliff_pos_idx:end),'-','Color',[.7,.7,.7],'LineWidth',1.5);
         end
     end
