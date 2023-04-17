@@ -53,7 +53,7 @@ for n = 1:length(time)
     for w = 1:length(platform_dist)
         cover_depth(n,w) = elev_beach(n,w)-elev_relRSL(w);
         if cover_depth(n,w) > 0
-            sc(n,w) = get_cov_shield('manual',cover_depth(n,w),attenuation,inputs.cover_density);
+            sc(n,w) = get_cov_shield('manual',cover_depth(n,w)*100,attenuation,inputs.cover_density);
         else
             sc(n,w) = 1;
         end

@@ -147,11 +147,14 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
           % Calculate across platform
           for w = 1:length(platform_dist)
               if expo(w)>=n % Do only if this point along platform is younger than the exposure time
-                  ero_rate_t_platform(n,w) = ero_rate_t(n);
-                  ero_rate_t_platform(~elev_belowHAT(n,w),w) = 0; % Remove down-wearing when platform is above RSL+HAT
-                  if ~isempty(berm_h) && berm_h > 0
-                      ero_rate_t_platform(sc_t(n,w)<1,w) = 0; % Remove down-wearing when platform is has surface cover
+                  this_ero_rate = ero_rate_t(n);
+                  if ~elev_belowHAT(n,w)
+                      this_ero_rate = 0; % Remove down-wearing when platform is above RSL+HAT
                   end
+                  if ~isempty(berm_h) && berm_h > 0 && sc_t(n,w)<1
+                      this_ero_rate = 0; % Remove down-wearing when platform is has surface cover
+                  end
+                  ero_rate_t_platform(n,w) = this_ero_rate;
               else
                   ero_rate_t_platform(n,w) = NaN;
               end
