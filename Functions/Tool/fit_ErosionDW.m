@@ -190,6 +190,7 @@ end
             title('Cumulative cover shielding')
             xlabel('Distance from the cliff (m)')
             ylabel('Cover shielding, sCover')
+            ax = gca; ax.YAxis(1).Color = cols(3,:);
         end
         
         subplot(2,2,3)
@@ -206,10 +207,11 @@ end
         ax.YAxis(2).Color = cols(1,:);
         
         subplot(2,2,4)
-        plot(inputs.profile(:,1),ero_rate,'-','Color',cols(3,:),'Linewidth',1);
+        plot(inputs.profile(:,1),ero_rate,'-','Color',cols(2,:),'Linewidth',1);
         title('Cumulative down-wearing')
         xlabel('Distance from the cliff (m)')
         ylabel('Rate (g cm^2 yr)')
+        ax = gca; ax.YAxis(1).Color = cols(2,:);
         
         drawnow;
     end
