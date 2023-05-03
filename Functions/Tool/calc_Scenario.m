@@ -20,7 +20,7 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
       sample_data.maxdepth = maxconc_z_gcm2*2 +10000; % sample depth*2 + safety factor
   else
       erosion = rateDW.present/10 *100; % cm/yr *100
-      sample_data.maxdepth = maxconc_z_gcm2 + (maxage*1000)*erosion*rho; % sample depth + maxage*erosion(cm/yr)*density
+      sample_data.maxdepth = maxconc_z_gcm2 + (maxage*1000)*erosion*rho; % sample depth + maxage*erosion(cm/yr)*density + safety factor
   end
 
   
@@ -29,7 +29,7 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
   elev_pres = inputs.profile(:,2)';
   rsl = flipud(inputs.sealevel);
   rsl = interp1(rsl(:,1),rsl(:,2),time'); % Interpolate for model time
-  rsl_plusHAT = rsl+inputs.HAT; % relative elevation of highest astronomical tide
+  rsl_plusHAT = rsl+inputs.HAT; % Relative elevation of highest astronomical tide
   
   
   % CALCULATE CLIFF RETREAT RATE AND EXPOSURE TIMES
@@ -60,11 +60,11 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
           % give maximum exposure
           if cliff_pos(end)<(inputs.profile(w,1))
               expo(w) = max(time);
-          
+              
           % Otherwise, use time when this cliff position is greater/equal to
           % this platform position
           else
-              this_pos_idx = find(cliff_pos>=(inputs.profile(w,1)),1); %(w-1),1);
+              this_pos_idx = find(cliff_pos>=(inputs.profile(w,1)),1);
               this_pos_t = time(this_pos_idx);
               expo(w) = this_pos_t;
           end
@@ -89,6 +89,7 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
   sWater = zeros(1,length(platform_dist));
   sw_t = zeros(length(time),length(platform_dist));
   elev_belowHAT = zeros(length(time),length(platform_dist));
+  elev_belowMLWN = zeros(length(time),length(platform_dist));
   
   % Calculate through time
   for n = 1:length(time)
@@ -103,6 +104,7 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
               else
                   sw_t(n,w) = 1;
               end
+              elev_belowMLWN(n,w) = elev_relRSL(w) < inputs.MLWN; % For use later
           else
               sw_t(n,w) = NaN;
           end
@@ -148,10 +150,10 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
           for w = 1:length(platform_dist)
               if expo(w)>=n % Do only if this point along platform is younger than the exposure time
                   this_ero_rate = ero_rate_t(n);
-                  if ~elev_belowHAT(n,w)
-                      this_ero_rate = 0; % Remove down-wearing when platform is above RSL+HAT
+                  if logical(elev_belowMLWN(n,w))
+                      this_ero_rate = 0; % Remove down-wearing when platform is below RSL+MLWN
                   end
-                  if ~isempty(berm_h) && berm_h > 0 && sc_t(n,w)<1
+                  if ~isempty(berm_h) && berm_h>0 && sc_t(n,w)<1
                       this_ero_rate = 0; % Remove down-wearing when platform is has surface cover
                   end
                   ero_rate_t_platform(n,w) = this_ero_rate;
@@ -177,9 +179,9 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
   % Get nuclide parameters
   par_sample_data = get_pars(par_sample_data,inputs.scaling_model);
   pars.pp = par_sample_data.pp;
-  pars.sf = par_sample_data.sf1026{1};
-  pars.cp = par_sample_data.cp1026{1};
-  pars.l = par_sample_data.pp.lambda10Be;
+  pars.sf10 = par_sample_data.sf1026{1};
+  pars.cp10 = par_sample_data.cp1026{1};
+  pars.l10 = par_sample_data.pp.lambda10Be;
   
   % Get sample thickness
   pars.top_z_gcm2 = mean(sample_data.CC(:,14)) * rho; % Use mean of samples (convert to g cm2)
@@ -214,6 +216,6 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
       drawnow;
   end
   
-  fprintf('Done.');
+  disp('Done.');
   
 end

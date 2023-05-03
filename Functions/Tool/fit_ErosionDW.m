@@ -37,6 +37,7 @@ sTopo = inputs.topo(:,2)';
 sWater = zeros(1,length(platform_dist));
 sw_t = zeros(length(time),length(platform_dist));
 elev_belowHAT = zeros(length(time),length(platform_dist));
+elev_belowMLWN = zeros(length(time),length(platform_dist));
 
 % Calculate through time
 for n = 1:length(time)
@@ -45,11 +46,12 @@ for n = 1:length(time)
     for w = 1:length(platform_dist)
         elev_belowHAT(n,w) = elev_relRSL(w) < inputs.HAT;
         % Do only if this point along the platform is below HAT
-        if elev_belowHAT(n,w)
+        if logical(elev_belowHAT(n,w))
             sw_t(n,w) = shielding_water(elev_relRSL(w),inputs.tides,inputs.HAT);
         else
             sw_t(n,w) = 1;
         end
+        elev_belowMLWN(n,w) = elev_relRSL(w) < inputs.MLWN; % For use later
     end
 end
 for w = 1:length(platform_dist)
@@ -77,16 +79,24 @@ end
 starting_rate = inputs.rateDW_pres_gcm2yr * ero_multiplier;
 ero_rate_t = linspace(inputs.rateDW_pres_gcm2yr,starting_rate,total_time);
 
-% Calculate across platform
+% Calculate through time
 ero_rate_t_platform = zeros(length(time),length(platform_dist));
 ero_rate = zeros(1,length(platform_dist));
-for w = 1:length(platform_dist)
-    ero_rate_t_platform(:,w) = ero_rate_t;
-    ero_rate_t_platform(~elev_belowHAT(:,w),w) = 0; % Remove down-wearing when platform is above RSL+HAT
-    if numel(X)>2
-        ero_rate_t_platform(sc_t(:,w)<1,w) = 0; % Remove down-wearing when platform is has surface cover
+for n = 1:length(time)
+    % Calculate across platform
+    for w = 1:length(platform_dist)
+        this_ero_rate = ero_rate_t(n);
+        if logical(elev_belowMLWN(n,w))
+            this_ero_rate = 0; % Remove down-wearing when platform is below RSL+MLWN
+        end
+        if numel(X)>2 && berm_h>0 && sc_t(n,w)<1
+            this_ero_rate = 0; % Remove down-wearing when platform is has surface cover
+        end
+        ero_rate_t_platform(n,w) = this_ero_rate;
     end
-    ero_rate(w) = (sum(ero_rate_t_platform(:,w)))/expo(w);
+end
+for w = 1:length(platform_dist)
+    ero_rate(w) = sum(ero_rate_t_platform(:,w))/expo(w);
 end
 ero_rate(ero_rate<0)=0; % Remove any negative erosion values
 
@@ -104,9 +114,9 @@ end
 
 % Get parameters
 pars.pp = sample_data.pp;
-pars.sf = sample_data.sf{1};
-pars.cp = sample_data.cp{1};
-pars.l = sample_data.pp.lambda10Be;
+pars.sf10 = sample_data.sf{1};
+pars.cp10 = sample_data.cp{1};
+pars.l10 = sample_data.pp.lambda10Be;
 pars.top_z_gcm2 = sample_data.top_z_gcm2;
 pars.bottom_z_gcm2 = sample_data.bottom_z_gcm2;
 

@@ -75,6 +75,7 @@ sTopo = shielding_topo(inputs.topo,inputs.profile,cliff_pos,expo);
 sWater = zeros(1,length(platform_dist));
 sw_t = zeros(length(time),length(platform_dist));
 elev_belowHAT = zeros(length(time),length(platform_dist));
+elev_belowMLWN = zeros(length(time),length(platform_dist));
 
 % Calculate through time
 for n = 1:length(time)
@@ -84,11 +85,12 @@ for n = 1:length(time)
         if expo(w)>=n % Do only if this point along platform is younger than the exposure time
             elev_belowHAT(n,w) = elev_relRSL(w) < inputs.HAT;
             % Do only if this point along the platform is below HAT
-            if elev_belowHAT(n,w)
+            if logical(elev_belowHAT(n,w))
                 sw_t(n,w) = shielding_water(elev_relRSL(w),inputs.tides,inputs.HAT);
             else
                 sw_t(n,w) = 1;
             end
+            elev_belowMLWN(n,w) = elev_relRSL(w) < inputs.MLWN; % For use later
         else
             sw_t(n,w) = NaN;
         end
@@ -127,13 +129,13 @@ for n = 1:length(time)
     for w = 1:length(platform_dist)
         if expo(w)>=n % Do only if this point along platform is younger than the exposure time
             this_ero_rate = ero_rate_t(n);
-            if ~elev_belowHAT(n,w)
-                this_ero_rate = 0; % Remove down-wearing when platform is above RSL+HAT
+            if logical(elev_belowMLWN(n,w))
+                this_ero_rate = 0; % Remove down-wearing when platform is below RSL+MLWN
             end
-            if numel(X)>3 && sc_t(n,w)<1
+            if numel(X)>3 && berm_h>0 && sc_t(n,w)<1
                 this_ero_rate = 0; % Remove down-wearing when platform is has surface cover
             end
-            ero_rate_t_platform(n,w) = this_ero_rate; 
+            ero_rate_t_platform(n,w) = this_ero_rate;
         else
             ero_rate_t_platform(n,w) = NaN;
         end
@@ -158,9 +160,9 @@ end
 
 % Get parameters
 pars.pp = sample_data.pp;
-pars.sf = sample_data.sf{1};
-pars.cp = sample_data.cp{1};
-pars.l = sample_data.pp.lambda10Be;
+pars.sf10 = sample_data.sf{1};
+pars.cp10 = sample_data.cp{1};
+pars.l10 = sample_data.pp.lambda10Be;
 pars.top_z_gcm2 = sample_data.top_z_gcm2;
 pars.bottom_z_gcm2 = sample_data.bottom_z_gcm2;
 
@@ -232,7 +234,7 @@ end
     function plot_variables(time,rsl,inputs,cliff_retreat,expo,ero_rate,sTopo,sWater,sCover,elev_belowHAT)
         
         figure(10);
-        cols = lines(5); % colour-scale for plotting
+        cols = lines(6); % colour-scale for plotting
         
         subplot(2,2,1)
         yyaxis left
@@ -288,7 +290,7 @@ end
         ax = gca;
         ax.YAxis(1).Color = cols(5,:);
         ax.YAxis(2).Color = cols(2,:);
-         
+               
         drawnow;
     end
 

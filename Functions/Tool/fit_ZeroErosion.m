@@ -40,7 +40,7 @@ for n = 1:length(time)
     for w = 1:length(platform_dist)
         elev_belowHAT(n,w) = elev_relRSL(w) < inputs.HAT;
         % Do only if this point along the platform is below HAT
-        if elev_belowHAT(n,w)
+        if logical(elev_belowHAT(n,w))
             sw_t(n,w) = shielding_water(elev_relRSL(w),inputs.tides,inputs.HAT);
         else
             sw_t(n,w) = 1;
@@ -80,9 +80,9 @@ end
 % Get parameters
 [~,max_idx] = max(sample_data.CC(:,3)); % Use the highest elevation sample (so not below sea level)
 pars.pp = sample_data.pp;
-pars.sf = sample_data.sf1026{max_idx};
-pars.cp = sample_data.cp1026{max_idx};
-pars.l = sample_data.pp.lambda10Be;
+pars.sf10 = sample_data.sf1026{max_idx};
+pars.cp10 = sample_data.cp1026{max_idx};
+pars.l10 = sample_data.pp.lambda10Be;
 pars.top_z_gcm2 = mean(sample_data.CC(:,14)) * mean(sample_data.CC(:,6)); % Use mean of samples (convert to g cm2)
 pars.bottom_z_gcm2 = mean(sample_data.CC(:,5)) * mean(sample_data.CC(:,6)); % Use mean of samples (convert to g cm2)
 
