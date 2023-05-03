@@ -180,7 +180,7 @@ end
     function plot_variables(time,rsl,inputs,ero_rate,sTopo,sWater,sCover,elev_belowHAT)
         
         figure(10);
-        cols = lines(5); % colour-scale for plotting
+        cols = lines(6); % Colour scale for plotting
         
         subplot(2,2,1)
         plot(time/1000,rsl,'-b','Linewidth',1);
@@ -188,33 +188,28 @@ end
         ylabel('Sea level (m AOD)')
         xlabel('Time (kyr BP)')
         
-        if isempty(sCover)
-            subplot(2,2,2)
-            plot(inputs.profile(:,1),sum(elev_belowHAT),'-k','Linewidth',1);
-            title('Platform submergence')
-            xlabel('Distance from the cliff (m)')
-            ylabel('Years below RSL+HAT')
-        else
-            subplot(2,2,2)
-            plot(inputs.profile(:,1),sCover,'color',cols(3,:),'Linewidth',1);
-            title('Cumulative cover shielding')
-            xlabel('Distance from the cliff (m)')
-            ylabel('Cover shielding, sCover')
-            ax = gca; ax.YAxis(1).Color = cols(3,:);
-        end
+        subplot(2,2,2)
+        plot(inputs.profile(:,1),sum(elev_belowHAT),'-','Color',cols(6,:),'Linewidth',1);
+        title('Platform submergence')
+        xlabel('Distance from the cliff (m)')
+        ylabel('Years below RSL+HAT')
+        ax = gca; ax.YAxis(1).Color = cols(6,:);
         
         subplot(2,2,3)
-        yyaxis left
-        plot(inputs.profile(:,1),sTopo,'-','color',cols(4,:),'Linewidth',1);
+        plot(inputs.profile(:,1),sTopo,'-','color',cols(4,:),'Linewidth',1); hold on;
+        plot(inputs.profile(:,1),sWater,'-','color',cols(1,:),'Linewidth',1);
+        if ~isempty(sCover)
+            plot(inputs.profile(:,1),sCover,'-','color',cols(3,:),'Linewidth',1);
+        end
+        hold off;
         title('Cumulative shielding')
         xlabel('Distance from the cliff (m)')
-        ylabel('Topographic shielding, sTopo')
-        yyaxis right
-        plot(inputs.profile(:,1),sWater,'color',cols(1,:),'Linewidth',1);
-        ylabel('Water shielding, sWater')
-        ax = gca;
-        ax.YAxis(1).Color = cols(4,:);
-        ax.YAxis(2).Color = cols(1,:);
+        ylabel('Shielding factor')
+        if isempty(sCover)
+            legend('Topographic','Water','Location','Best');
+        else
+            legend('Topographic','Water','Cover','Location','Best');
+        end
         
         subplot(2,2,4)
         plot(inputs.profile(:,1),ero_rate,'-','Color',cols(2,:),'Linewidth',1);
@@ -222,7 +217,7 @@ end
         xlabel('Distance from the cliff (m)')
         ylabel('Rate (g cm^2 yr)')
         ax = gca; ax.YAxis(1).Color = cols(2,:);
-        
+                
         drawnow;
     end
 

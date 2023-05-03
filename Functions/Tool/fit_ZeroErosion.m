@@ -144,40 +144,56 @@ end
     function plot_variables(time,rsl,inputs,sTopo,sWater,sCover,elev_belowHAT)
         
         figure(10);
-        cols = lines(5); % colour-scale for plotting
+        cols = lines(6); % Colour scale for plotting
         
-            subplot(2,2,1)
-            plot(time/1000,rsl,'-b','Linewidth',1);
-            title('Relative sea level')
-            ylabel('Sea level (m AOD)')
-            xlabel('Time (kyr BP)')
+        ax1 = subplot(2,2,1);
+        plot(time/1000,rsl,'-b','Linewidth',1);
+        title('Relative sea level')
+        ylabel('Sea level (m AOD)')
+        xlabel('Time (kyr BP)')
         
-        if isempty(sCover)
-            subplot(2,2,2)
-            plot(inputs.profile(:,1),sum(elev_belowHAT),'-k','Linewidth',1);
-            title('Platform submergence')
-            xlabel('Distance from the cliff (m)')
-            ylabel('Years below RSL+HAT')
-        else
-            subplot(2,2,2)
-            plot(inputs.profile(:,1),sCover,'color',cols(3,:),'Linewidth',1);
-            title('Cumulative cover shielding')
-            xlabel('Distance from the cliff (m)')
-            ylabel('Cover shielding, sCover')
-        end
-        
-        subplot(2,2,3)
+        ax3 = subplot(2,2,3);
         plot(inputs.profile(:,1),sTopo,'-','color',cols(4,:),'Linewidth',1);
         title('Cumulative topographic shielding')
         xlabel('Distance from the cliff (m)')
-        ylabel('Topographic shielding, sTopo')
+        ylabel('Shielding, sTopo')
         
-        subplot(2,2,4)
-        plot(inputs.profile(:,1),sWater,'color',cols(1,:),'Linewidth',1);
-        title('Cumulative water shielding')
-        xlabel('Distance from the cliff (m)')
-        ylabel('Water shielding, sWater')
-               
+        if isempty(sCover)
+            
+            ax2 = subplot(2,2,2);
+            plot(inputs.profile(:,1),sum(elev_belowHAT),'-','Color',cols(6,:),'Linewidth',1);
+            title('Platform submergence')
+            xlabel('Distance from the cliff (m)')
+            ylabel('Years below RSL+HAT')
+            
+            ax4 = subplot(2,2,4);
+            plot(inputs.profile(:,1),sWater,'color',cols(1,:),'Linewidth',1);
+            title('Cumulative water shielding')
+            xlabel('Distance from the cliff (m)')
+            ylabel('Shielding, sWater')
+        
+        else
+            
+            ax2 = subplot(2,2,2);
+            yyaxis left
+            plot(inputs.profile(:,1),sum(elev_belowHAT),'-','Color',cols(6,:),'Linewidth',1);
+            ylabel('Years below RSL+HAT')
+            yyaxis right
+            plot(inputs.profile(:,1),sWater,'color',cols(1,:),'Linewidth',1);
+            ylabel('Shielding, sWater')
+            xlabel('Distance from the cliff (m)')
+            title('Submergence and shielding')
+            ax2.YAxis(1).Color = cols(6,:);
+            ax2.YAxis(2).Color = cols(1,:);
+            
+            ax4 = subplot(2,2,4);
+            plot(inputs.profile(:,1),sCover,'color',cols(3,:),'Linewidth',1);
+            title('Cumulative cover shielding')
+            xlabel('Distance from the cliff (m)')
+            ylabel('Shielding, sCover')
+            
+        end
+                
         drawnow;
     end
 
