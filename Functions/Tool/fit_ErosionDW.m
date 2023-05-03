@@ -106,7 +106,7 @@ if 1
     if numel(X)<3
         sCover = [];
     end
-   plot_variables(time,rsl,inputs,ero_rate,sTopo,sWater,sCover,elev_belowHAT);
+   plot_variables(time,rsl,inputs,(ero_rate./sample_data.mean_rho).*10,sTopo,sWater,sCover,elev_belowHAT);
 end
 
 
@@ -215,7 +215,7 @@ end
         plot(inputs.profile(:,1),ero_rate,'-','Color',cols(2,:),'Linewidth',1);
         title('Cumulative down-wearing')
         xlabel('Distance from the cliff (m)')
-        ylabel('Rate (g cm^2 yr)')
+        ylabel('Rate (mm yr)')
         ax = gca; ax.YAxis(1).Color = cols(2,:);
                 
         drawnow;
