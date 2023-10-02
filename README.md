@@ -1,13 +1,11 @@
 # Coastal-cosmo-model
 Cosmogenic nuclide model for coastal erosion and sea level change scenarios
 
-NOTE: THIS MODEL IS STILL UNDER DEVELOPMENT AND REQUIRES FURTHER TESTING. PLEASE GET IN CONTACT IF YOU WISH TO USE THE MODEL.
-
 Written by Richard Selwyn Jones (richard.s.jones@monash.edu), using modifications of code from Swirad et al. (2020, Nat. Comms.; and refs. therein) for calculating time-dependent topographic and water shielding, and cliff retreat, and CRONUScalc (Marrero et al., 2016, Quat. Geochronology; and refs. therein) for calculating cosmogenic nuclide production. The model uses a MATLAB optimised solver to find the best-fit variables for a given case.
 
 The model consists of various sub-models for different purposes, and to test hypotheses of increasing complexity:
 - Cosmogenic inheritance model, which finds the best-fit surface erosion rate for a measured sample assuming steady-state production.
-- Zero platform erosion model (no cliff retreat or down-wearing), which finds the best-fit total exposure time from a given sea-level history, with or without surface cover (e.g. beach).
+- Zero erosion platform model (no cliff retreat or down-wearing), which finds the best-fit total exposure time from a given sea-level history, with or without surface cover (e.g. beach).
 - Down-wearing platform model (no cliff retreat), which finds the best-fit total exposure time and down-wearing rate from a given sea-level history, with or without surface cover (e.g. beach).
 - Cliff retreat platform model, which finds the best-fit total exposure time and cliff retreat rate (accelerating, decelerating or constant), from a given sea-level history, with or without surface cover (e.g. beach). The down-wearing rate can either be specified using a present-day rate, or be a free parameter.
 
