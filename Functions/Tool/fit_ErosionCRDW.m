@@ -12,12 +12,15 @@ time = 1:total_time;
 if numel(X)>2
     ero_multiplier = X(3);
 else
-    ero_multiplier = 1;
+    ero_multiplier = 0;
 end
 if numel(X)>3
     berm_h = X(4);
     if berm_h < 0
         berm_h = 0;
+    elseif berm_h > 5
+        misfit = 1000;
+        return
     end
 end
 
@@ -34,10 +37,14 @@ rsl_plusHAT = rsl+inputs.HAT; % Relative elevation of highest astronomical tide
 % CALCULATE CLIFF RETREAT RATE AND EXPOSURE TIMES
 
 % Calculate retreat rate through time
-starting_rate = inputs.rateCR_pres_myr * cliff_ret_multiplier;
-if starting_rate<0
-    starting_rate = 0;
+if cliff_ret_multiplier < 0
+    starting_rate = inputs.rateCR_pres_myr * abs(cliff_ret_multiplier);
+elseif cliff_ret_multiplier > 0
+    starting_rate = inputs.rateCR_pres_myr * 1+cliff_ret_multiplier;
+else
+    starting_rate = inputs.rateCR_pres_myr * 1;
 end
+starting_rate = round(starting_rate,3);
 cliff_retreat = linspace(inputs.rateCR_pres_myr,starting_rate,total_time);
 platform_aboveSL = min(elev_pres) > rsl_plusHAT; % Find when base of platform is above sea level (HAT)
 cliff_retreat(platform_aboveSL) = 0; % Give zero retreat
@@ -118,7 +125,14 @@ end
 % DETERMINE DOWN-WEARING RATE
     
 % Generate rate through time
-starting_rate = inputs.rateDW_pres_gcm2yr * ero_multiplier;
+if ero_multiplier < 0
+    starting_rate = inputs.rateDW_pres_gcm2yr * abs(ero_multiplier);
+elseif ero_multiplier > 0
+    starting_rate = inputs.rateDW_pres_gcm2yr * 1+ero_multiplier;
+else
+    starting_rate = inputs.rateDW_pres_gcm2yr * 1;
+end
+starting_rate = round(starting_rate,3);
 ero_rate_t = linspace(inputs.rateDW_pres_gcm2yr,starting_rate,total_time);
 
 % Calculate through time
@@ -214,7 +228,7 @@ if ~isempty(plot_fig)
     else
         inputs.cliff_pos = round(cliff_pos(cliff_pos_idx));
     end
-    if ~isempty(inputs.rateDW_pres_gcm2yr) || (inputs.rateDW_pres_gcm2yr~=0 && ero_multiplier~=1)
+    if ~isempty(inputs.rateDW_pres_gcm2yr) || (inputs.rateDW_pres_gcm2yr~=0 && ero_multiplier~=0)
         ero_rate_myr = (ero_rate ./ sample_data.mean_rho) ./ 100;
         inputs.profile_ero_expo = inputs.profile(:,2)' + (ero_rate_myr.*expo); % Platform profile before down-wearing
     end

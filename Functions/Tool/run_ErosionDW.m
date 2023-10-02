@@ -9,14 +9,14 @@ function bestfit = run_ErosionDW(inputs,totaltime_initial,rateDW,cover,sample_da
   maxconc_idx = find(max(sample_data.measured_inh(:,2)+sample_data.measured_inh(:,3))==sample_data.measured_inh(:,2)+sample_data.measured_inh(:,3));
   rho = mean(sample_data.CC(:,6));
   maxconc_z_gcm2 = sample_data.CC(maxconc_idx,5) * rho;  
-  maxage=8160; % 6* half-life = 8160 ka
-  if ~isfield(rateDW,'change_initial') || rateDW.change_initial < 1
+  maxage = 500; % 500 ka (6* half-life = 8160 ka)
+  if ~isfield(rateDW,'change_initial') || rateDW.change_initial < 0
       max_rateDW_change = 1;
   else
-      max_rateDW_change = rateDW.change_initial;
+      max_rateDW_change = 1+rateDW.change_initial;
   end
-  max_DWrate = rateDW.present * max_rateDW_change * 5; % Use starting down-wearing rate * 5 as a safety factor
-  erosion = max_DWrate/10 *100; % cm/yr *100
+  max_DWrate = rateDW.present * max_rateDW_change; % Use starting down-wearing rate
+  erosion = max_DWrate/10; % cm/yr
   sample_data.maxdepth = maxconc_z_gcm2 + (maxage*1000)*erosion*rho; % sample depth + maxage*erosion(cm/yr)*density
 
   % Get nuclide parameters, add to sample data
@@ -45,18 +45,18 @@ function bestfit = run_ErosionDW(inputs,totaltime_initial,rateDW,cover,sample_da
       [optX,fmin] = fminsearch(@(X) fit_ErosionDW(X,inputs,sample_data,misfit_meas,plot_fig),[rateDW.change_initial,totaltime_initial],opts);
       
       % Export result
-      if optX(1) <0.005
+      if (optX(1) < 0.001) && (optX(1) > -0.001)
           optX(1) = 0;
       end
       if optX(2) <0
           optX(2) = 0;
       end
-      if optX(1) > 1
+      if optX(1) > 0
           fprintf('\nBestfit down-wearing rate: past rate was %0.1f times faster (decelerating) \nBestfit total time: %.f years \n(reduced chi-squared of %0.2f for %.f DOF)\n',...
               optX(1),round(optX(2)),fmin./(length(sample_data.s)-3),length(sample_data.s)-3);
-      elseif optX(1) < 1
+      elseif optX(1) < 0
           fprintf('\nBestfit down-wearing rate: past rate was %0.1f times slower (accelerating) \nBestfit total time: %.f years \n(reduced chi-squared of %0.2f for %.f DOF)\n',...
-              optX(1)+1,round(optX(2)),fmin./(length(sample_data.s)-3),length(sample_data.s)-3);
+              abs(optX(1)),round(optX(2)),fmin./(length(sample_data.s)-3),length(sample_data.s)-3);
       else
           fprintf('\nBestfit down-wearing rate: same as present (%0.3f mm yr) \nBestfit total time: %.f years \n(reduced chi-squared of %0.2f for %.f DOF)\n',...
               rateDW.present,round(optX(2)),fmin./(length(sample_data.s)-3),length(sample_data.s)-3);
@@ -67,18 +67,18 @@ function bestfit = run_ErosionDW(inputs,totaltime_initial,rateDW,cover,sample_da
       [optX,fmin] = fminsearch(@(X) fit_ErosionDW(X,inputs,sample_data,misfit_meas,plot_fig),[rateDW.change_initial,totaltime_initial,cover.depth_initial],opts);
       
       % Export result      
-      if optX(1) <0.005
+      if (optX(1) < 0.001) && (optX(1) > -0.001)
           optX(1) = 0;
       end
       if optX(2) <0
           optX(2) = 0;
       end
-      if optX(1) > 1
+      if optX(1) > 0
           fprintf('\nBestfit down-wearing rate: past rate was %0.1f times faster (decelerating) \nBestfit total time: %.f years \nBestfit cover depth: %.f m \n(reduced chi-squared of %0.2f for %.f DOF)\n',...
               optX(1),round(optX(2)),optX(3),fmin./(length(sample_data.s)-3),length(sample_data.s)-3);
-      elseif optX(1) < 1
+      elseif optX(1) < 0
           fprintf('\nBestfit down-wearing rate: past rate was %0.1f times slower (accelerating) \nBestfit total time: %.f years \nBestfit cover depth: %.f m \n(reduced chi-squared of %0.2f for %.f DOF)\n',...
-              optX(1)+1,round(optX(2)),optX(3),fmin./(length(sample_data.s)-3),length(sample_data.s)-3);
+              abs(optX(1)),round(optX(2)),optX(3),fmin./(length(sample_data.s)-3),length(sample_data.s)-3);
       else
           fprintf('\nBestfit down-wearing rate: same as present (%0.3f mm yr) \nBestfit total time: %.f years \nBestfit cover depth: %.f m \n(reduced chi-squared of %0.2f for %.f DOF)\n',...
               rateDW.present,round(optX(2)),optX(3),fmin./(length(sample_data.s)-3),length(sample_data.s)-3);

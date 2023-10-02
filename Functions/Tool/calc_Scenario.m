@@ -15,12 +15,12 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
   maxconc_idx = find(max(sample_data.measured_inh(:,2)+sample_data.measured_inh(:,3))==sample_data.measured_inh(:,2)+sample_data.measured_inh(:,3));
   rho = mean(sample_data.CC(:,6));
   maxconc_z_gcm2 = sample_data.CC(maxconc_idx,5) * rho;  
-  maxage=8160; % 6* half-life = 8160 ka
+  maxage = 500; % 500 ka (6* half-life = 8160 ka)
   if isempty(rateDW.present)
-      sample_data.maxdepth = maxconc_z_gcm2*2 +10000; % sample depth*2 + safety factor
+      par_sample_data.maxdepth = maxconc_z_gcm2*2 +10000; % sample depth*2 + safety factor
   else
-      erosion = rateDW.present/10 *100; % cm/yr *100
-      sample_data.maxdepth = maxconc_z_gcm2 + (maxage*1000)*erosion*rho; % sample depth + maxage*erosion(cm/yr)*density + safety factor
+      erosion = rateDW.present/10; % cm/yr
+      par_sample_data.maxdepth = maxconc_z_gcm2 + (maxage*1000)*erosion*rho; % sample depth + maxage*erosion(cm/yr)*density
   end
 
   
@@ -38,10 +38,14 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
       rateCR_pres_myr = rateCR.present;
       
       % Calculate retreat rate through time
-      starting_rate = rateCR_pres_myr * cliff_ret_multiplier;
-      if starting_rate<0
-          starting_rate = 0;
+      if cliff_ret_multiplier < 0
+          starting_rate = rateCR_pres_myr * abs(cliff_ret_multiplier);
+      elseif cliff_ret_multiplier > 0
+          starting_rate = rateCR_pres_myr * 1+cliff_ret_multiplier;
+      else
+          starting_rate = rateCR_pres_myr * 1;
       end
+      starting_rate = round(starting_rate,3);
       cliff_retreat = linspace(rateCR_pres_myr,starting_rate,total_time);
       platform_aboveSL = min(elev_pres) > rsl_plusHAT; % Find when base of platform is above sea level (HAT)
       cliff_retreat(platform_aboveSL) = 0; % Give zero retreat
@@ -139,7 +143,14 @@ function calc_Scenario(inputs,total_time,rateCR,rateDW,cover,sample_data,plot_fi
       rateDW_pres_gcm2yr = (rateDW.present ./10) .* rho;
       
       % Generate rate through time
-      starting_rate = rateDW_pres_gcm2yr * ero_multiplier;
+      if ero_multiplier < 0
+          starting_rate = rateDW_pres_gcm2yr * abs(ero_multiplier);
+      elseif ero_multiplier > 0
+          starting_rate = rateDW_pres_gcm2yr * 1+ero_multiplier;
+      else
+          starting_rate = rateDW_pres_gcm2yr * 1;
+      end
+      starting_rate = round(starting_rate,3);
       ero_rate_t = linspace(rateDW_pres_gcm2yr,starting_rate,total_time);
       
       % Calculate through time

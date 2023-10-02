@@ -10,13 +10,12 @@ function bestfit = run_InheritanceSS(inputs,erorate_initial,sample_data,inh_meas
   inh_meas.rho = sample_data.CC(inh_meas.sample_idx,6);
   inh_meas.z_gcm2 = inh_meas.depth * 100 * inh_meas.rho;
   
-  maxage=8160; % 6* half-life = 8160 ka
-  erosion = erorate_initial/10 *10; % cm/yr *10
+  maxage = 500; % 500 ka (6* half-life = 8160 ka)
   if erorate_initial == 0
       sample_data.maxdepth = max(inh_meas.z_gcm2)*2 +10000; % sample depth*2 + safety factor
   else
-      erosion = erorate_initial/10 *10; % cm/yr *10
-      sample_data.maxdepth = max(inh_meas.z_gcm2) + (maxage*1000)*erosion*inh_meas.rho;% +10000; % sample depth + maxage*erosion(cm/yr)*density + safety factor
+      erosion = erorate_initial/10; % cm/yr
+      sample_data.maxdepth = max(inh_meas.z_gcm2) + (maxage*1000)*erosion*inh_meas.rho; % sample depth + maxage*erosion(cm/yr)*density
   end
   sample_data = get_pars(sample_data,inputs.scaling_model);
   

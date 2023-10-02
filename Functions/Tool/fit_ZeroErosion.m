@@ -8,6 +8,9 @@ if numel(X)>1
     berm_h = X(2);
     if berm_h < 0
         berm_h = 0;
+    elseif berm_h > 5
+        misfit = 1000;
+        return
     end
 end
 

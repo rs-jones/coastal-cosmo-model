@@ -9,18 +9,18 @@ function bestfit = run_ErosionCRDW(inputs,totaltime_initial,rateCR,rateDW,cover,
   maxconc_idx = find(max(sample_data.measured_inh(:,2)+sample_data.measured_inh(:,3))==sample_data.measured_inh(:,2)+sample_data.measured_inh(:,3));
   rho = mean(sample_data.CC(:,6));
   maxconc_z_gcm2 = sample_data.CC(maxconc_idx,5) * rho;  
-  maxage=8160; % 6* half-life = 8160 ka
+  maxage = 500; % 500 ka (6* half-life = 8160 ka)
   if isempty(rateDW.present)
-      sample_data.maxdepth = maxconc_z_gcm2*2 +10000; % sample depth*2 + safety factor
+      par_sample_data.maxdepth = maxconc_z_gcm2*2 +10000; % sample depth*2 + safety factor
   else
-      if ~isfield(rateDW,'change_initial') || rateDW.change_initial(1) < 1
+      if ~isfield(rateDW,'change_initial') || rateDW.change_initial(1) < 0
           max_rateDW_change = 1;
       else
-          max_rateDW_change = rateDW.change_initial;
+          max_rateDW_change = 1+rateDW.change_initial;
       end
-      max_DWrate = rateDW.present * max_rateDW_change * 5; % Use starting down-wearing rate * 5 as a safety factor
-      erosion = max_DWrate/10 *100; % cm/yr *100
-      sample_data.maxdepth = maxconc_z_gcm2 + (maxage*1000)*erosion*rho; % sample depth + maxage*erosion(cm/yr)*density
+      max_DWrate = rateDW.present * max_rateDW_change; % Use starting down-wearing rate
+      erosion = max_DWrate/10; % cm/yr
+      par_sample_data.maxdepth = maxconc_z_gcm2 + (maxage*1000)*erosion*rho; % sample depth + maxage*erosion(cm/yr)*density
   end
   
   % Get nuclide parameters, add to sample data
@@ -37,7 +37,7 @@ function bestfit = run_ErosionCRDW(inputs,totaltime_initial,rateCR,rateDW,cover,
   
   % Set optimisation rules
   opts = optimset('fminsearch');
-  opts = optimset(opts,'TolFun',2,'TolX',2);
+  opts = optimset(opts,'TolFun',1.5,'TolX',1.5);
   
   
   % Find bestfit scenario and export result
@@ -55,7 +55,7 @@ function bestfit = run_ErosionCRDW(inputs,totaltime_initial,rateCR,rateDW,cover,
       [optX,fmin] = fminsearch(@(X) fit_ErosionCRDW(X,inputs,sample_data,misfit_meas,plot_fig),[rateCR.change_initial,totaltime_initial],opts);
       
       % Export result
-      if optX(1) <0.005
+      if (optX(1) < 0.001) && (optX(1) > -0.001)
           optX(1) = 0;
       end
       if optX(2) <0
@@ -66,7 +66,7 @@ function bestfit = run_ErosionCRDW(inputs,totaltime_initial,rateCR,rateDW,cover,
               optX(1),round(optX(2)),rateDW.present,fmin./(length(sample_data.s)-3),length(sample_data.s)-3);
       elseif optX(1) < 0
           fprintf('\nBestfit cliff retreat rate: past rate was %0.1f times slower (accelerating) \nBestfit total time: %.f years \nusing present-day down-wearing rate of %0.3f mm yr and no surface cover \n(reduced chi-squared of %0.2f for %.f DOF)\n',...
-              optX(1)+1,round(optX(2)),rateDW.present,fmin./(length(sample_data.s)-3),length(sample_data.s)-3);
+              abs(optX(1)),round(optX(2)),rateDW.present,fmin./(length(sample_data.s)-3),length(sample_data.s)-3);
       else
           fprintf('\nBestfit cliff retreat rate: same as present (%0.3f mm yr) \nBestfit total time: %.f years \nusing present-day down-wearing rate of %0.3f mm yr and no surface cover \n(reduced chi-squared of %0.2f for %.f DOF)\n',...
               rateCR.present,round(optX(2)),rateDW.present,fmin./(length(sample_data.s)-3),length(sample_data.s)-3);
@@ -86,32 +86,34 @@ function bestfit = run_ErosionCRDW(inputs,totaltime_initial,rateCR,rateDW,cover,
       [optX,fmin] = fminsearch(@(X) fit_ErosionCRDW(X,inputs,sample_data,misfit_meas,plot_fig),[rateCR.change_initial,totaltime_initial,rateDW.change_initial,cover.depth_initial],opts);
       
       % Export result
-      if optX(1) <0.005
+      if (optX(1) < 0.001) && (optX(1) > -0.001)
           optX(1) = 0;
       end
       if optX(2) <0
           optX(2) = 0;
       end
-      if optX(3) <0.005
+      if (optX(3) < 0.001) && (optX(3) > -0.001)
           optX(3) = 0;
       end
-      opt1_out = string(round(optX(1),2)+1);
+      opt1a_out = string(round(optX(1),2));
+      opt1b_out = string(round(abs(optX(1)),2));
       opt2_out = string(round(optX(2)));
-      opt3_out = string(round(optX(3),2));
+      opt3a_out = string(round(abs(optX(3)),2));
+      opt3b_out = string(round(optX(3),2));
       opt4_out = string(round(optX(4),2));
       time_txt = strcat('Bestfit total time: ',{' '},opt2_out,{' '},'years');
-      cover_txt = strcat('Bestfit cover depth:: ',{' '},opt4_out,{' '},'m');
+      cover_txt = strcat('Bestfit cover depth: ',{' '},opt4_out,{' '},'m');
       if optX(1) > 0
-          cliff_txt = strcat('Bestfit cliff retreat rate: past rate was',{' '},opt1_out{1},' times faster (decelerating)');
+          cliff_txt = strcat('Bestfit cliff retreat rate: past rate was',{' '},opt1a_out{1},' times faster (decelerating)');
       elseif optX(1) < 0
-          cliff_txt = strcat('Bestfit cliff retreat rate: past rate was',{' '},opt1_out{1},' times slower (accelerating)');
+          cliff_txt = strcat('Bestfit cliff retreat rate: past rate was',{' '},opt1b_out{1},' times slower (accelerating)');
       else
           cliff_txt = strcat('Bestfit cliff retreat rate: same as present (',string(rateCR.present),{' '},'mm yr)');
       end
-      if optX(3) > 0
-          dw_txt = strcat('Bestfit down-wearing rate: past rate was',{' '},opt3_out{1},' times faster (decelerating)');
-      elseif optX(3) < 0
-          dw_txt = strcat('Bestfit down-wearing rate: past rate was',{' '},opt3_out{1},' times slower (accelerating)');
+      if optX(3) > 1
+          dw_txt = strcat('Bestfit down-wearing rate: past rate was',{' '},opt3a_out{1},' times faster (decelerating)');
+      elseif optX(3) < 1
+          dw_txt = strcat('Bestfit down-wearing rate: past rate was',{' '},opt3b_out{1},' times slower (accelerating)');
       else
           dw_txt = strcat('Bestfit down-wearing rate: same as present (',string(rateDW.present),{' '},'mm yr)');
       end

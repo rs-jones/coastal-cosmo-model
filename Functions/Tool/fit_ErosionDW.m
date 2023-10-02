@@ -13,6 +13,9 @@ if numel(X)>2
     berm_h = X(3);
     if berm_h < 0
         berm_h = 0;
+    elseif berm_h > 5
+        misfit = 1000;
+        return
     end
 end
 
@@ -76,7 +79,14 @@ end
 % DETERMINE DOWN-WEARING RATE
 
 % Calculate rate through time
-starting_rate = inputs.rateDW_pres_gcm2yr * ero_multiplier;
+if ero_multiplier < 0
+    starting_rate = inputs.rateDW_pres_gcm2yr * abs(ero_multiplier);
+elseif ero_multiplier > 0
+    starting_rate = inputs.rateDW_pres_gcm2yr * 1+ero_multiplier;
+else
+    starting_rate = inputs.rateDW_pres_gcm2yr * 1;
+end
+starting_rate = round(starting_rate,3);
 ero_rate_t = linspace(inputs.rateDW_pres_gcm2yr,starting_rate,total_time);
 
 % Calculate through time

@@ -140,7 +140,7 @@ bestfit = run_ZeroErosion(inputs,totaltime_initial,cover,sample_data,misfit_meas
 
 % Specify model values
 rateDW.present = 0.22; % Present-day down-wearing rate (mm yr)
-rateDW.change_initial = 0.5; % Past rate was faster (>1), slower (0>1) or the same/constant (1) (multiplier relative to present; used to initiate the optimisation)
+rateDW.change_initial = 0; % Past rate was faster (>0), slower (<0) or the same/constant (0) (used to initiate the optimisation)
 totaltime_initial = 7000; % Approx. total time (years; used to initiate the optimisation)
 cover.depth_initial = []; % Approx. max depth of beach berm when platform is above RSL+HAT (metres; used to initiate the optimisation) - leave empty for no cover
 cover.density = 1.6; % Density of surface cover (g/cm^3)
@@ -158,7 +158,7 @@ bestfit = run_ErosionDW(inputs,totaltime_initial,rateDW,cover,sample_data,misfit
 
 % Specify model values
 rateCR.present = 0.027; % Present-day cliff retreat rate (m yr)
-rateCR.change_initial = 1; % Past rate was faster (>1), slower (0>1) or the same/constant (1) (multiplier relative to present; used to initiate the optimisation)
+rateCR.change_initial = 0; % Past rate was faster (>0), slower (<0) or the same/constant (0) (used to initiate the optimisation)
 totaltime_initial = 7000; % Approx. total time (years; used to initiate the optimisation)
 rateDW.present = 0.22; % Present-day down-wearing rate (mm yr)
 misfit_meas = 'minmax'; % Concentration measurements to use for calculating the misfit ('all','min','max','minmax')
@@ -175,9 +175,9 @@ bestfit = run_ErosionCRDW(inputs,totaltime_initial,rateCR,rateDW,[],sample_data,
 
 % Specify model values
 rateCR.present = 0.027; % Present-day cliff retreat rate (m yr)
-rateCR.change_initial = 1.5; % Past rate was faster (>1), slower (0>1) or the same/constant (1) (multiplier relative to present; used to initiate the optimisation)
+rateCR.change_initial = 0.5; % Past rate was faster (>0), slower (<0) or the same/constant (0) (used to initiate the optimisation)
 rateDW.present = 0.22; % Present-day down-wearing rate (mm yr)
-rateDW.change_initial = 1; % Past rate was faster (>1), slower (0>1) or the same/constant (1) (multiplier relative to present; used to initiate the optimisation) - leave empty to only use constant present-day down-wearing rate
+rateDW.change_initial = 0; % Past rate was faster (>0), slower (<0) or the same/constant (0) (used to initiate the optimisation) - leave empty to only use constant present-day down-wearing rate
 totaltime_initial = 7000; % Approx. total time (years; used to initiate the optimisation)
 cover.depth_initial = 0.5; % Approx. max depth of beach berm when platform is above RSL+HAT (metres; used to initiate the optimisation)
 cover.density = 1.6; % Density of surface cover (g/cm^3)
@@ -196,9 +196,9 @@ bestfit = run_ErosionCRDW(inputs,totaltime_initial,rateCR,rateDW,cover,sample_da
 % Specify scenario values
 totaltime = 6800; % Total time (years)
 rateCR.present = 0.027; % Present-day cliff retreat rate (m yr) - leave empty ([]) to ignore
-rateCR.change = 2; % Past rate was faster (>1), slower (0>1) or the same/constant (1) (multiplier relative to present)
+rateCR.change = 0; % Past rate was faster (>0), slower (<0) or the same/constant (0) (used to initiate the optimisation)
 rateDW.present = 0.22; % Present-day down-wearing rate (mm yr) - leave empty ([]) to ignore
-rateDW.change = 0.1; % Past rate was faster (>1), slower (0>1) or the same/constant (1) (multiplier relative to present)
+rateDW.change = 0; % Past rate was faster (>0), slower (<0) or the same/constant (0) (used to initiate the optimisation)
 cover.depth = []; % Max depth of beach berm when platform is above RSL+HAT (metres) - leave empty ([]) to ignore
 cover.density = 1.6; % Density of surface cover (g/cm^3)
 
